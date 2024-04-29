@@ -1,0 +1,128 @@
+-- USE CHINOOK;
+
+/*
+TIP: Alcuni di questi esercizi possono essere complessi, cercate di suddividere la richiesta in piccoli step, 
+applicate un approccio logico e risolvete gli step uno alla volta prima di unificarli e giungere alla soluzione.
+*/
+
+-- Esercizio 1 Elencate il numero di tracce per ogni genere in ordine discendente, escludendo quei generi che hanno meno di 10 tracce. 
+SELECT 
+		GE.NAME AS GENERE,
+        COUNT(TR.TRACKID) AS NUMERO_TRACCE
+FROM GENRE AS GE
+INNER JOIN TRACK AS TR
+ON GE.GENREID = TR.GENREID
+GROUP BY GE.NAME
+HAVING COUNT(TR.TRACKID) >=10
+ORDER BY COUNT(TR.TRACKID) DESC;
+
+-- Esercizio 2 Trovate le tre canzoni più costose. 
+SELECT 
+		NAME,
+        UNITPRICE
+FROM TRACK
+ORDER BY UNITPRICE DESC
+LIMIT 3;
+
+-- Esercizio 3 Elencate gli artisti che hanno canzoni più lunghe di 6 minuti. 
+SELECT 
+		AR.NAME AS ARTISTA,
+        MAX(TR.MILLISECONDS/60000) AS DURATA_CANZONE
+FROM TRACK AS TR
+INNER JOIN ALBUM AS AL
+ON TR.ALBUMID = AL.ALBUMID
+INNER JOIN ARTIST AS AR
+ON AL.ARTISTID = AR.ARTISTID
+GROUP BY AR.NAME
+HAVING MAX(TR.MILLISECONDS/60000) > 6
+ORDER BY MAX(TR.MILLISECONDS/60000);
+
+-- Esercizio 4 Individuate la durata media delle tracce per ogni genere. 
+SELECT 
+		GE.NAME AS GENERE,
+        AVG(TR.MILLISECONDS/60000) AS MEDIA_TRACCE
+FROM GENRE AS GE
+INNER JOIN TRACK AS TR
+ON GE.GENREID = TR.GENREID
+GROUP BY GE.NAME
+ORDER BY  AVG(TR.MILLISECONDS/60000);
+
+-- Esercizio 5 Elencate tutte le canzoni con la parola “Love” nel titolo, ordinandole alfabeticamente prima per genere e poi per nome. 
+SELECT 
+		GE.NAME AS GENERE,
+        TR.NAME AS TITOLO_CANZONE
+FROM TRACK AS TR
+INNER JOIN GENRE AS GE
+ON TR.GENREID = GE.GENREID
+WHERE TR.NAME LIKE '%LOVE%'
+ORDER BY GE.NAME, TR.NAME;
+
+-- Esercizio 6 Trovate il costo medio per ogni tipologia di media.
+SELECT 
+		ME.NAME AS TIPO_MEDIA,
+        AVG(TR.UNITPRICE) AS PREZZO_MEDIO
+FROM MEDIATYPE AS ME
+INNER JOIN TRACK AS TR
+ON ME.MEDIATYPEID = TR.MEDIATYPEID
+GROUP BY ME.NAME;
+
+-- Esercizio 7 Individuate il genere con più tracce. 
+SELECT 
+		GE.NAME AS GENERE,
+        COUNT(TR.NAME) AS NUMERO_TRACCE
+FROM GENRE AS GE
+INNER JOIN TRACK AS TR
+ON GE.GENREID = TR.GENREID
+GROUP BY GE.NAME
+ORDER BY COUNT(TR.NAME);
+
+-- Esercizio 8 Trovate gli artisti che hanno lo stesso numero di album dei Rolling Stones. 
+SELECT 
+		AR.NAME AS ARTISTI,
+        COUNT(AL.TITLE) AS NUMERO_ALBUM
+FROM ARTIST AS AR
+INNER JOIN ALBUM AS AL
+ON AR.ARTISTID = AL.ARTISTID
+GROUP BY AR.NAME
+HAVING COUNT(*) =(SELECT 
+					COUNT(*)
+					FROM ARTIST AS AR
+					INNER JOIN ALBUM AS AL
+					ON AR.ARTISTID = AL.ARTISTID
+					WHERE UPPER(AR.NAME) LIKE '%ROLLING%');
+
+-- Esercizio 9 Trovate l’artista con l’album più costoso. 
+SELECT  A.NAME,
+        AL.TITLE,
+        SUM(T.UNITPRICE) AS PREZZOTOTALE
+FROM ARTIST AS A
+INNER JOIN ALBUM AS AL 
+ON A.ARTISTID = AL.ARTISTID
+INNER JOIN TRACK AS T
+ON AL.ALBUMID = T.ALBUMID
+GROUP BY A.NAME, AL.ALBUMID
+ORDER BY PREZZOTOTALE DESC
+LIMIT 3;
+
+-- Esercizio 10 Trova il totale delle vendite per ciascun cliente.
+SELECT
+		CONCAT(CU.LASTNAME, ' ',CU.FIRSTNAME) AS NOME_COMPLETO,
+        SUM(INV.TOTAL) AS TOTALE_FATTURATO
+FROM CUSTOMER AS CU
+INNER JOIN INVOICE AS INV
+ON CU.CUSTOMERID = INV.CUSTOMERID
+GROUP BY NOME_COMPLETO
+ORDER BY TOTALE_FATTURATO;
+ 
+-- Esercizio 11 Trova il cliente che ha speso di più in una singola transazione: 
+SELECT
+		CONCAT(CU.LASTNAME, ' ',CU.FIRSTNAME) AS NOME_COMPLETO,
+        INV.INVOICEID AS IDFATTURA,
+        SUM(INV.TOTAL) AS TOTALE_FATTURATO
+FROM CUSTOMER AS CU
+INNER JOIN INVOICE AS INV
+ON CU.CUSTOMERID = INV.CUSTOMERID
+GROUP BY NOME_COMPLETO, IDFATTURA
+ORDER BY TOTALE_FATTURATO DESC
+LIMIT 1;
+ 
